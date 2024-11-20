@@ -8,7 +8,29 @@ const userSchema = new mongoose.Schema({
     lastName: {
         type: String,
         required: true,
-    }
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+    },
+    password: {
+        type: String,
+        required: true,
+    },
+    accountType: {
+        type: String,
+        enum: ['savings', 'current'],
+        default: 'savings',
+    },
+    balance: {
+        type: Number,
+        default: 0,
+    },
+    isActive: {
+    type: Boolean,
+    default: true, 
+    },
 }, { timestamps: true })
 
 const User = mongoose.model('User', userSchema)
