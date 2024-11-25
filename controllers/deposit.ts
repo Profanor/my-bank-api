@@ -1,17 +1,19 @@
-import { Request, Response } from 'express'
+import { Request, Response } from 'express';
 import Transaction from '../models/transaction';
 import User from '../models/user';
 
 
-export const deposit = async(req: Request, res: Response) => {
+export const deposit = async(req: Request, res: Response): Promise<void> => {
     const { userId, amount } = req.body;
-    if ( amount <= 0) {
-        return res.status(400).json({ message: 'Deposit amount must be greater than 0'});
+    if ( amount <= 0 ) {
+        res.status(400).json({ message: 'Deposit amount must be greater than 0'});
+        return;
     }
     try {
         const user = await User.findById(userId);
-        if(!user || !amount) {
-            return res.status(404).json({ message: 'User ID and amount are required' });
+            if(!user || !amount) {
+                res.status(404).json({ message: 'User ID and amount are required' });
+                return;
         }
 
         user.balance += amount;
