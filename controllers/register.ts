@@ -30,6 +30,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
             balance,
             isActive
         });
+        console.log('NewUser:', newUser);
+        
 
         res.status(201).json({
             message: 'User registered successfully',

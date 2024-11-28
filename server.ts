@@ -5,9 +5,11 @@ import dotenv from 'dotenv';
 dotenv.config();
 /*------------------------------------------- */
 import indexRoute from './routes/index';
+import authRoute from './routes/auth';
 import transactionRoute from './routes/transactions';
 
 db(); // call db connect
+
 const app = express();
 const port = process.env.PORT || '5000';
 
@@ -15,6 +17,7 @@ const port = process.env.PORT || '5000';
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use('/api', indexRoute);
+app.use('/api/auth', authRoute);
 app.use('/api/transactions', transactionRoute);
 
 app.use(( err: any, req: Request, res: Response, next: NextFunction ) => {
