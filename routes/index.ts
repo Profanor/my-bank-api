@@ -3,7 +3,7 @@ import express from 'express';
 const router = express.Router();
 
 router.get('/', (req, res) => {
-    res.send('hi user');
+    res.send('Welcome to Imperial Bank..');
 });
 
 export default router;

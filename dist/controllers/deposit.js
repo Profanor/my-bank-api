@@ -17,22 +17,22 @@ const transaction_1 = __importDefault(require("../models/transaction"));
 const user_1 = __importDefault(require("../models/user"));
 const deposit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId, amount } = req.body;
-    if (amount <= 0) {
+    if (!amount || amount <= 0) {
         res.status(400).json({ message: 'Deposit amount must be greater than 0' });
         return;
     }
     try {
         const user = yield user_1.default.findById(userId);
-        if (!user || !amount) {
-            res.status(404).json({ message: 'User ID and amount are required' });
+        if (!user) {
+            res.status(404).json({ message: 'User does not exist' });
             return;
         }
-        user.balance += amount;
+        user.balance = Number(user.balance) + Number(amount);
         yield user.save();
         const transaction = new transaction_1.default({
             user: user._id,
             type: 'deposit',
-            amount,
+            amount: Number(amount),
             balance: user.balance
         });
         yield transaction.save();
@@ -47,6 +47,7 @@ const deposit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         });
     }
     catch (error) {
+        console.error('an error occured:', error.message);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 });

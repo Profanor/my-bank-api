@@ -9,6 +9,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 /*------------------------------------------- */
 const index_1 = __importDefault(require("./routes/index"));
+const auth_1 = __importDefault(require("./routes/auth"));
 const transactions_1 = __importDefault(require("./routes/transactions"));
 (0, database_1.default)(); // call db connect
 const app = (0, express_1.default)();
@@ -17,6 +18,7 @@ const port = process.env.PORT || '5000';
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: false }));
 app.use('/api', index_1.default);
+app.use('/api/auth', auth_1.default);
 app.use('/api/transactions', transactions_1.default);
 app.use((err, req, res, next) => {
     console.error(err.message);
