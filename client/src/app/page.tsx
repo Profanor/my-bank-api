@@ -1,3 +1,6 @@
+'use client'
+import Link from 'next/link'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -7,7 +10,39 @@ import { ArrowDownIcon, ArrowUpIcon, BellIcon, CreditCardIcon, DollarSignIcon, L
 import { SavingsGoalsChart } from "@/components/savings-goals-chart"
 import { InvestmentPortfolioChart } from "@/components/investment-portfolio-chart"
 
+interface Transaction {
+  id: string
+  type: 'deposit' | 'withdrawal' | 'transfer'
+  amount: number
+  description: string
+  date: string
+}
+
+
 export default function DashboardPage() {
+  const [ balance, setBalance ] = useState(12450.67);
+  const [ transactions, setTransactions ] = useState<Transaction[]>([])
+
+  useEffect(() => {
+    // simulate real-time balance updates
+    const balanceInterval = setInterval(() => {
+      setBalance(prevBalance => {
+        const change = (Math.random() - 0.5) * 100
+        return Math.round((prevBalance + change) * 100) / 100
+      })
+    }, 5000)
+
+    // simulate fetching initial transactions
+    setTimeout(() => {
+      setTransactions([
+        { id: '1', type: 'deposit', amount: 500, description: 'Salary', date: '2023-05-01' },
+        { id: '2', type: 'withdrawal', amount: 200, description: 'ATM Withdrawal', date: '2023-05-02' },
+        { id: '3', type: 'transfer', amount: 150, description: 'Transfer to Sarah', date: '2023-05-03' },
+      ])
+    }, 1000)
+
+    return () => clearInterval(balanceInterval)
+  }, [])
   return (
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white shadow">
@@ -65,7 +100,7 @@ export default function DashboardPage() {
               <CardDescription>Your current balance across all accounts</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-4xl font-bold text-gray-900">$12,345.67</div>
+              <div className="text-4xl font-bold text-gray-900">${balance.toFixed(2)}</div>
             </CardContent>
             <CardFooter className="flex justify-between">
               <Button className="bg-green-500 hover:bg-green-600">
@@ -98,31 +133,25 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                <li className="flex justify-between items-center">
-                  <span className="flex items-center">
-                    <ArrowDownIcon className="mr-2 h-4 w-4 text-green-500" />
-                    Deposit
-                  </span>
-                  <span className="font-semibold">+$500.00</span>
-                </li>
-                <li className="flex justify-between items-center">
-                  <span className="flex items-center">
-                    <ArrowUpIcon className="mr-2 h-4 w-4 text-red-500" />
-                    Withdrawal
-                  </span>
-                  <span className="font-semibold">-$200.00</span>
-                </li>
-                <li className="flex justify-between items-center">
-                  <span className="flex items-center">
-                    <ArrowUpIcon className="mr-2 h-4 w-4 text-blue-500" />
-                    Transfer to Sarah
-                  </span>
-                  <span className="font-semibold">-$150.00</span>
-                </li>
+                {transactions.map(transaction => (
+                  <li key={transaction.id} className="flex justify-between items-center">
+                    <span className="flex items-center">
+                      {transaction.type === 'deposit' && <ArrowDownIcon className="mr-2 h-4 w-4 text-green-500" />}
+                      {transaction.type === 'withdrawal' && <ArrowUpIcon className="mr-2 h-4 w-4 text-red-500" />}
+                      {transaction.type === 'transfer' && <ArrowUpIcon className="mr-2 h-4 w-4 text-blue-500" />}
+                      {transaction.description}
+                    </span>
+                    <span className={`font-semibold ${transaction.type === 'deposit' ? 'text-green-500' : 'text-red-500'}`}>
+                      {transaction.type === 'deposit' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                    </span>
+                  </li>
+                ))}
               </ul>
             </CardContent>
             <CardFooter>
+              <Link href="/transactions" passHref>
               <Button variant="ghost" className="w-full">View All Transactions</Button>
+              </Link>
             </CardFooter>
           </Card>
           <div className="col-span-full md:col-span-2">
