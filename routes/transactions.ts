@@ -7,6 +7,6 @@ const router = express.Router();
 
 router.post('/deposit', deposit);
 router.post('/withdrawal', withdrawal);
-router.get('/balance/:id', Balance)
+router.get('/balance/:id', Balance);
 
 export default router;
