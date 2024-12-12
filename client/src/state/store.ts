@@ -1,11 +1,15 @@
-import { configureStore } from "@reduxjs/toolkit";
+import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
-import { UserAuthApi } from "@/state/services/auth.service"
+import { UserAuthApi } from "@/state/services/auth.service";
+// import userAuth from "@/state/reducers/auth.reducer";
+
+const reducers = combineReducers({
+    // userAuth,
+    [UserAuthApi.reducerPath]: UserAuthApi.reducer,
+});
 
 export const store = configureStore({
-    reducer: {
-        [UserAuthApi.reducerPath]: UserAuthApi.reducer,
-    },
+    reducer: reducers,
     middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(UserAuthApi.middleware),
 });
