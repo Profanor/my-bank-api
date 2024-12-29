@@ -7,9 +7,56 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { DollarSignIcon, EyeIcon, EyeOffIcon } from 'lucide-react'
+import { useLoginMutation } from '@/state/services/auth.service'
+import { useToast } from "@/hooks/use-toast"
+import { ToastAction } from "@/components/ui/toast"
+import { useRouter } from 'next/navigation';
+
 
 export default function LoginPage() {
+  const [ email, setEmail ] = useState("");
+  const [ password, setPassword ] = useState("");
   const [showPassword, setShowPassword] = useState(false)
+  const [ login, { isLoading } ] = useLoginMutation();
+  const { toast } = useToast();
+  const router = useRouter();
+
+  const handleLogin = () => {
+    if (!email.trim() || !password.trim()) {
+      console.error('please fill all required fields');
+      toast({
+        variant: "destructive",
+        title: "Uh Oh!",
+        description: "please fill in all required fields",
+      })
+      return;
+    }
+    login({
+      email,
+      password
+    })
+    .unwrap()
+    .then((response: unknown) => {
+      console.log('login successful', response);
+      toast({
+        variant: "default",
+        title: "Success",
+        description: "Welcome to Imperial Bank!",
+      })
+      setTimeout(() => {
+        router.push('/');
+      }, 3000)
+    })
+    .catch((error) => {
+    console.error('Login failed', error);
+    toast({
+      variant: "destructive",
+      title: "Login failed",
+      description: "Incorrect email or password. Please try again.",
+      action: <ToastAction onClick={handleLogin} altText={'Retry'}>Retry</ToastAction>
+    });
+  });
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -26,13 +73,20 @@ export default function LoginPage() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="m@example.com" />
+            <Input 
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="m@example.com" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
             <div className="relative">
               <Input
                 id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
               />
@@ -57,7 +111,12 @@ export default function LoginPage() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col">
-          <Button className="w-full">Log In</Button>
+          <Button 
+            className="w-full"
+            onClick={handleLogin}
+            disabled={isLoading}
+            >{isLoading ? "Loading..." : "Login"}
+              </Button>
           <Link href="/forgot-password" className="mt-2 text-sm text-center text-blue-600 hover:underline">
             Forgot your password?
           </Link>

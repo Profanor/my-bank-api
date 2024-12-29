@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -10,19 +9,33 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DollarSignIcon, EyeIcon, EyeOffIcon } from 'lucide-react'
 import { useCreateAccountMutation } from '@/state/services/auth.service'
 import { useToast } from "@/hooks/use-toast"
+import { ToastAction } from "@/components/ui/toast"
+import { useRouter } from 'next/navigation';
+import Link from 'next/link'
 
 
 export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false)
-  const [ signup ] = useCreateAccountMutation();
   const [ firstName, setFirstName ] = useState("");
   const [ lastName, setLastName ] = useState("");
   const [ email, setEmail ] = useState("");
   const [ password, setPassword ] = useState("");
   const [ accountType, setAccountType ] = useState("");
-  const { toast } = useToast()
+  const [ signup, { isLoading } ] = useCreateAccountMutation();
+  const { toast } = useToast();
+  const router = useRouter();
 
   const handleSignup = () => {
+    if (!firstName || !lastName || !email || !password || !accountType) { // input validation
+      console.error('please fill all required fields');
+      toast({
+        variant: "destructive",
+        title: "uh oh!",
+        description: "please fill in all required fields",
+      })
+      return;
+    }
+
     signup({
     firstName,
     lastName,
@@ -38,6 +51,9 @@ export default function SignUpPage() {
         title: "Account created successfully",
         description: "Welcome to Imperial Bank!",
       })
+      setTimeout(() => {
+        router.push('/login');
+      }, 3000)
     })
     .catch((error) => {
       console.error("we couldn't sign you up at the moment", error);
@@ -45,6 +61,7 @@ export default function SignUpPage() {
         variant: "destructive",
         title: "Signup failed",
         description: "We couldn't sign you up at the moment. Please try again.",
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
       })
     });
   }
@@ -131,7 +148,8 @@ export default function SignUpPage() {
           <Button 
             className="w-full" 
             onClick={handleSignup}
-            >Sign Up</Button>
+            disabled={isLoading}
+            >{isLoading ? "Creating account..." : "Sign Up"}</Button>
           <p className="mt-2 text-xs text-center text-gray-700">
             By clicking Sign Up, you agree to our{" "}
             <Link href="/terms" className="underline">
