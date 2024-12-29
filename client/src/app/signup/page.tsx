@@ -8,9 +8,34 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DollarSignIcon, EyeIcon, EyeOffIcon } from 'lucide-react'
+import { useCreateAccountMutation } from '@/state/services/auth.service'
+
 
 export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false)
+  const [ signup ] = useCreateAccountMutation();
+  const [ firstName, setFirstName ] = useState("");
+  const [ lastName, setLastName ] = useState("");
+  const [ email, setEmail ] = useState("");
+  const [ password, setPassword ] = useState("");
+  const [ accountType, setAccountType ] = useState("");
+
+  const handleSignup = () => {
+    signup({
+    firstName,
+    lastName,
+    email,
+    password,
+    accountType
+    })
+    .unwrap()
+    .then((response: unknown) => {
+      console.log('signup successful', response);
+    })
+    .catch((error) => {
+      console.error("we couldn't sign you up at the moment", error);
+    });
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -28,16 +53,25 @@ export default function SignUpPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">First Name</Label>
-              <Input id="firstName" placeholder="John" />
+              <Input 
+                id="firstName" 
+                value={firstName} 
+                placeholder="John" 
+                onChange={(e) => setFirstName(e.target.value)}/>
             </div>
             <div className="space-y-2">
               <Label htmlFor="lastName">Last Name</Label>
-              <Input id="lastName" placeholder="Doe" />
+              <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Doe" />
             </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="john.doe@example.com" />
+            <Input 
+              id="email" 
+              type="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="john.doe@example.com" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
@@ -45,6 +79,8 @@ export default function SignUpPage() {
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
               />
               <Button
@@ -68,7 +104,7 @@ export default function SignUpPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="accountType">Account Type</Label>
-            <Select>
+            <Select value={accountType} onValueChange={(value) => setAccountType(value)}>
               <SelectTrigger id="accountType">
                 <SelectValue placeholder="Select account type" />
               </SelectTrigger>
@@ -80,7 +116,7 @@ export default function SignUpPage() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col">
-          <Button className="w-full">Sign Up</Button>
+          <Button className="w-full" onClick={handleSignup}>Sign Up</Button>
           <p className="mt-2 text-xs text-center text-gray-700">
             By clicking Sign Up, you agree to our{" "}
             <Link href="/terms" className="underline">
