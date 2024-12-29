@@ -1,5 +1,6 @@
 import express from 'express';
 import { Request, Response, NextFunction } from 'express';
+import cors from 'cors';
 import db from './db/database';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -12,6 +13,12 @@ db(); // call db connect
 
 const app = express();
 const port = process.env.PORT || '5000';
+
+app.use(cors({
+  origin: "http://localhost:3000", 
+  methods: "GET,POST,PUT,DELETE",
+  credentials: true
+}));
 
 // middleware
 app.use(express.json());
