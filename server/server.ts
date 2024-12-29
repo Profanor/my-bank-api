@@ -30,7 +30,7 @@ app.use('/api/transactions', transactionRoute);
 app.use(( err: any, req: Request, res: Response, next: NextFunction ) => {
     console.error(err.message);
     res.status(500).json({ error: 'something happened'})
-})
+});
 
 
 app.listen(port, () => {

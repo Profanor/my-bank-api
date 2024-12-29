@@ -2,6 +2,8 @@
 import localFont from "next/font/local";
 import { Provider } from "react-redux";
 import { store } from "@/state/store";
+import { Toaster } from "@/components/ui/toaster"
+
 import "./globals.css";
 
 const geistSans = localFont({
@@ -27,6 +29,7 @@ export default function RootLayout({
         <Provider store={store}>        
         {children}
         </Provider>
+        <Toaster />
       </body>
     </html>
   );

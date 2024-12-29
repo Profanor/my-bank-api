@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DollarSignIcon, EyeIcon, EyeOffIcon } from 'lucide-react'
 import { useCreateAccountMutation } from '@/state/services/auth.service'
+import { useToast } from "@/hooks/use-toast"
 
 
 export default function SignUpPage() {
@@ -19,6 +20,7 @@ export default function SignUpPage() {
   const [ email, setEmail ] = useState("");
   const [ password, setPassword ] = useState("");
   const [ accountType, setAccountType ] = useState("");
+  const { toast } = useToast()
 
   const handleSignup = () => {
     signup({
@@ -31,9 +33,19 @@ export default function SignUpPage() {
     .unwrap()
     .then((response: unknown) => {
       console.log('signup successful', response);
+      toast({
+        variant: "default",
+        title: "Account created successfully",
+        description: "Welcome to Imperial Bank!",
+      })
     })
     .catch((error) => {
       console.error("we couldn't sign you up at the moment", error);
+      toast({
+        variant: "destructive",
+        title: "Signup failed",
+        description: "We couldn't sign you up at the moment. Please try again.",
+      })
     });
   }
 
@@ -116,7 +128,10 @@ export default function SignUpPage() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col">
-          <Button className="w-full" onClick={handleSignup}>Sign Up</Button>
+          <Button 
+            className="w-full" 
+            onClick={handleSignup}
+            >Sign Up</Button>
           <p className="mt-2 text-xs text-center text-gray-700">
             By clicking Sign Up, you agree to our{" "}
             <Link href="/terms" className="underline">
