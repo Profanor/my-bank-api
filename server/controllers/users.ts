@@ -1,10 +1,12 @@
 import express from 'express'
 import { Request, Response } from 'express';
-import User from '../models/user';
+import { AppDataSource } from '../data-source';
+import { User } from '../entity/user';
 
 export const getUsers = async(req: Request, res: Response): Promise<any> => {
     try {
-        const users = await User.find();
+        const userRepository = AppDataSource.getRepository(User)
+        const users = await userRepository.find();
 
         res.status(200).json({
             message: 'Users fetched successfully',
@@ -18,7 +20,20 @@ export const getUsers = async(req: Request, res: Response): Promise<any> => {
 
 export const getUser = async(req: Request, res: Response): Promise<any> => {
     try {
-        const user = await User.findOne();
+        const { id } = req.params;
+
+        if (!id) {
+            res.status(400).json({ message: 'User ID is required' });
+            return;
+        }
+
+        const userRepository = AppDataSource.getRepository(User)
+        const user = await userRepository.findOneBy({ id });
+
+        if (!user) {
+            res.status(404).json({ message: 'User not found' });
+            return;
+        }
 
         res.status(200).json({
             message: 'User retrieved successfully',

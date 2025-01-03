@@ -1,10 +1,21 @@
 import { Request, Response } from 'express';
-import User from '../models/user';
+import { AppDataSource } from '../data-source';
+import { User } from '../entity/user';
 
 export const Balance = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
-        const user = await User.findById(id)
+        console.log('Received ID:', id);
+
+        const userRepository = AppDataSource.getRepository(User);
+
+        // check if ID is provided
+        if (!id) {
+            res.status(400).json({ message: 'User ID is required' });
+            return;
+        }
+        
+        const user = await userRepository.findOneBy({ id })
 
         if (!user) {
             res.status(404).json({ message: 'user does not exist'});

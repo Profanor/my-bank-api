@@ -1,15 +1,13 @@
 import express from 'express';
 import { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import db from './db/database';
 import dotenv from 'dotenv';
 dotenv.config();
 /*------------------------------------------- */
 import indexRoute from './routes/index';
 import authRoute from './routes/auth';
 import transactionRoute from './routes/transactions';
-
-db(); // call db connect
+/*------------------------------------------- */
 
 const app = express();
 const port = process.env.PORT || '5000';

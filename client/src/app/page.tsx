@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input"
 import { ArrowDownIcon, ArrowUpIcon, BellIcon, CreditCardIcon, DollarSignIcon, LogOutIcon, MenuIcon, PieChartIcon, PlusIcon, SearchIcon, SettingsIcon, UserIcon } from 'lucide-react'
 import { SavingsGoalsChart } from "@/components/savings-goals-chart"
 import { InvestmentPortfolioChart } from "@/components/investment-portfolio-chart"
+import { useGetBalanceQuery } from '@/state/services/transaction.service'
+import { useAuth } from '@/state/hooks/user.hook'
 
 interface Transaction {
   id: string
@@ -18,19 +20,32 @@ interface Transaction {
   date: string
 }
 
-
 export default function DashboardPage() {
-  const [ balance, setBalance ] = useState(12450.67);
-  const [ transactions, setTransactions ] = useState<Transaction[]>([])
+  const { user } = useAuth();
+  const [balance, setBalance] = useState(12450.67);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  
+  const { data } = useGetBalanceQuery(user?.id, {
+    refetchOnMountOrArgChange: true,
+    skip: !user?.id,
+  });
+
+  useEffect(() => {
+    if (data) {
+      setBalance(data.balance);
+    }
+  }, [data]);
+
+  console.log('UserId:', user?.id);
 
   useEffect(() => {
     // simulate real-time balance updates
     const balanceInterval = setInterval(() => {
       setBalance(prevBalance => {
-        const change = (Math.random() - 0.5) * 100
-        return Math.round((prevBalance + change) * 100) / 100
-      })
-    }, 5000)
+        const change = (Math.random() - 0.5) * 100;
+        return Math.round((prevBalance + change) * 100) / 100;
+      });
+    }, 5000);
 
     // simulate fetching initial transactions
     setTimeout(() => {
@@ -38,11 +53,12 @@ export default function DashboardPage() {
         { id: '1', type: 'deposit', amount: 500, description: 'Salary', date: '2023-05-01' },
         { id: '2', type: 'withdrawal', amount: 200, description: 'ATM Withdrawal', date: '2023-05-02' },
         { id: '3', type: 'transfer', amount: 150, description: 'Transfer to Sarah', date: '2023-05-03' },
-      ])
-    }, 1000)
+      ]);
+    }, 1000);
 
-    return () => clearInterval(balanceInterval)
-  }, [])
+    return () => clearInterval(balanceInterval);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white shadow">
@@ -150,7 +166,7 @@ export default function DashboardPage() {
             </CardContent>
             <CardFooter>
               <Link href="/transactions" passHref>
-              <Button variant="ghost" className="w-full">View All Transactions</Button>
+                <Button variant="ghost" className="w-full">View All Transactions</Button>
               </Link>
             </CardFooter>
           </Card>
@@ -189,6 +205,5 @@ export default function DashboardPage() {
         </div>
       </main>
     </div>
-  )
+  );
 }
-

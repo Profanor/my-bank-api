@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { hashPassword } from '../utils/password'
-import User from '../models/user';
+import { AppDataSource } from '../data-source';
+import { User } from '../entity/user';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -12,7 +13,9 @@ export const register = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        const existingUser = await User.findOne({ email })
+        const userRepository = AppDataSource.getRepository(User);
+
+        const existingUser = await userRepository.findOneBy({ email })
         if (existingUser) {
             res.status(400).json({ message: 'user already exists'});
             return;
@@ -21,7 +24,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         // hash the password
         const hashedPassword = await hashPassword(password);
 
-        const newUser = await User.create({
+        const newUser = await userRepository.create({
             firstName,
             lastName,
             email,
@@ -30,13 +33,16 @@ export const register = async (req: Request, res: Response): Promise<void> => {
             balance,
             isActive
         });
+
+        // save the user to the database
+        await userRepository.save(newUser);
         console.log('NewUser:', newUser);
         
 
         res.status(201).json({
             message: 'User registered successfully',
             user: {
-                id: newUser._id,
+                id: newUser.id,
                 firstName: newUser.firstName,
                 lastName: newUser.lastName,
                 email: newUser.email,

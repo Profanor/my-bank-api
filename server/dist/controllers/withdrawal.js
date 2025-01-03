@@ -8,39 +8,43 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.withdrawal = void 0;
-const transaction_1 = __importDefault(require("../models/transaction"));
-const user_1 = __importDefault(require("../models/user"));
+const transaction_1 = require("../entity/transaction");
+const user_1 = require("../entity/user");
+const data_source_1 = require("../data-source");
 const withdrawal = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId, amount } = req.body;
+    // validate the withdrawal amount
     if (amount <= 0) {
-        res.status(400).json({ message: 'withdrawal amount must be greater than 0' });
+        res.status(400).json({ message: 'Withdrawal amount must be greater than 0' });
         return;
     }
     try {
-        const user = yield user_1.default.findById(userId);
+        const userRepository = data_source_1.AppDataSource.getRepository(user_1.User);
+        const transactionRepository = data_source_1.AppDataSource.getRepository(transaction_1.Transaction);
+        const user = yield userRepository.findOneBy({ id: userId });
         if (!user) {
             res.status(404).json({ message: 'User not found' });
             return;
         }
-        // check if user has sufficient balance
         if (user.balance < amount) {
             res.status(400).json({ message: 'Insufficient balance' });
             return;
         }
+        // deduct the withdrawal amount from the user's balance
         user.balance -= amount;
-        yield user.save();
-        const transaction = new transaction_1.default({
-            user: user._id,
+        // save the updated user balance
+        yield userRepository.save(user);
+        // create a new transaction record
+        const transaction = transactionRepository.create({
+            user,
             type: 'withdrawal',
             amount,
-            balance: user.balance
+            balance: user.balance,
         });
-        yield transaction.save();
+        // save the transaction
+        yield transactionRepository.save(transaction);
         res.status(201).json({
             message: 'Withdrawal successful',
             transaction: {
@@ -52,7 +56,8 @@ const withdrawal = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         });
     }
     catch (error) {
-        res.status(500).json({ message: 'server error', error: error.message });
+        console.error('Server error:', error.message);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
 exports.withdrawal = withdrawal;

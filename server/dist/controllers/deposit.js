@@ -8,13 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deposit = void 0;
-const transaction_1 = __importDefault(require("../models/transaction"));
-const user_1 = __importDefault(require("../models/user"));
+const data_source_1 = require("../data-source");
+const transaction_1 = require("../entity/transaction");
+const user_1 = require("../entity/user");
 const deposit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId, amount } = req.body;
     if (!amount || amount <= 0) {
@@ -22,20 +20,22 @@ const deposit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return;
     }
     try {
-        const user = yield user_1.default.findById(userId);
+        const userRepository = data_source_1.AppDataSource.getRepository(user_1.User);
+        const transactionRepository = data_source_1.AppDataSource.getRepository(transaction_1.Transaction);
+        const user = yield userRepository.findOneBy({ id: userId });
         if (!user) {
             res.status(404).json({ message: 'User does not exist' });
             return;
         }
         user.balance = Number(user.balance) + Number(amount);
-        yield user.save();
-        const transaction = new transaction_1.default({
-            user: user._id,
+        yield userRepository.save(user);
+        const transaction = transactionRepository.create({
+            user,
             type: 'deposit',
             amount: Number(amount),
             balance: user.balance
         });
-        yield transaction.save();
+        yield transactionRepository.save(transaction);
         res.status(201).json({
             message: 'Deposit successful',
             transaction: {

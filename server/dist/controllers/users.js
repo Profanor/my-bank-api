@@ -9,32 +9,45 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Balance = void 0;
+exports.getUser = exports.getUsers = void 0;
 const data_source_1 = require("../data-source");
 const user_1 = require("../entity/user");
-const Balance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userRepository = data_source_1.AppDataSource.getRepository(user_1.User);
+        const users = yield userRepository.find();
+        res.status(200).json({
+            message: 'Users fetched successfully',
+            users,
+        });
+    }
+    catch (error) {
+        console.error('an error occured fetching users:', error.message);
+        res.status(500).json({ message: 'internal server error', error: error.message });
+    }
+});
+exports.getUsers = getUsers;
+const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        console.log('Received ID:', id);
-        const userRepository = data_source_1.AppDataSource.getRepository(user_1.User);
-        // check if ID is provided
         if (!id) {
             res.status(400).json({ message: 'User ID is required' });
             return;
         }
+        const userRepository = data_source_1.AppDataSource.getRepository(user_1.User);
         const user = yield userRepository.findOneBy({ id });
         if (!user) {
-            res.status(404).json({ message: 'user does not exist' });
+            res.status(404).json({ message: 'User not found' });
             return;
         }
         res.status(200).json({
-            message: 'Balance retrieved successfully',
-            balance: user.balance,
+            message: 'User retrieved successfully',
+            user
         });
     }
     catch (error) {
-        console.error('an error occured getting your balance', error.message);
-        res.status(500).json({ message: 'Server error', error: error.message });
+        console.error('an error occured fetching that user:', error.message);
+        res.status(500).json({ message: 'internal server error', error: error.message });
     }
 });
-exports.Balance = Balance;
+exports.getUser = getUser;

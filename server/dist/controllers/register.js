@@ -8,13 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.register = void 0;
 const password_1 = require("../utils/password");
-const user_1 = __importDefault(require("../models/user"));
+const data_source_1 = require("../data-source");
+const user_1 = require("../entity/user");
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { firstName, lastName, email, password, accountType, balance, isActive } = req.body;
@@ -23,14 +21,15 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             res.status(400).json({ message: 'Missing required fields: firstName, lastName, email, and password are mandatory' });
             return;
         }
-        const existingUser = yield user_1.default.findOne({ email });
+        const userRepository = data_source_1.AppDataSource.getRepository(user_1.User);
+        const existingUser = yield userRepository.findOneBy({ email });
         if (existingUser) {
             res.status(400).json({ message: 'user already exists' });
             return;
         }
         // hash the password
         const hashedPassword = yield (0, password_1.hashPassword)(password);
-        const newUser = yield user_1.default.create({
+        const newUser = yield userRepository.create({
             firstName,
             lastName,
             email,
@@ -39,11 +38,13 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             balance,
             isActive
         });
+        // save the user to the database
+        yield userRepository.save(newUser);
         console.log('NewUser:', newUser);
         res.status(201).json({
             message: 'User registered successfully',
             user: {
-                id: newUser._id,
+                id: newUser.id,
                 firstName: newUser.firstName,
                 lastName: newUser.lastName,
                 email: newUser.email,

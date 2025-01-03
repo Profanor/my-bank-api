@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
-import Transaction from '../models/transaction';
-import User from '../models/user';
+import { AppDataSource } from '../data-source';
+import { Transaction } from '../entity/transaction';
+import { User } from '../entity/user';
 
 
 export const deposit = async(req: Request, res: Response): Promise<void> => {
@@ -11,22 +12,25 @@ export const deposit = async(req: Request, res: Response): Promise<void> => {
         return;
     }
     try {
-        const user = await User.findById(userId);
+        const userRepository = AppDataSource.getRepository(User);
+        const transactionRepository = AppDataSource.getRepository(Transaction);
+
+        const user = await userRepository.findOneBy({ id: userId });
             if(!user) {
                 res.status(404).json({ message: 'User does not exist' });
                 return;
         }
 
         user.balance = Number(user.balance) + Number(amount);
-        await user.save();
+        await userRepository.save(user);
 
-        const transaction = new Transaction({ 
-            user: user._id,
+        const transaction = transactionRepository.create({ 
+            user,
             type: 'deposit', 
             amount: Number(amount), 
             balance: user.balance 
         });
-        await transaction.save();
+        await transactionRepository.save(transaction);
 
         res.status(201).json({ 
             message: 'Deposit successful',  

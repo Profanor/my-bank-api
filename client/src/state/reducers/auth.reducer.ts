@@ -1,28 +1,33 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {RootState} from '../store';
 
 interface UserState {
-    user: unknown | null;
-    token: unknown;
+    user: any | null;
+    token: string | null;
 }
+
+const initialState: UserState = {
+    user: null,
+    token: null,
+};
 
 const slice = createSlice({
     name: 'userauth',
-  initialState: {
-    user: null,
-    token: {},
-    resetInfo: {},
-    profileImg: {},
-  } as unknown as UserState,
+    initialState,
   reducers: {
-    setCredentials: (state, {payload: {user, token}}) => {
-      state.user = user;
-      state.token = token;
-    },
-},
+    setCredentials: (state, action: PayloadAction<{ user: any; token: string }>) => {
+            state.user = action.payload.user;
+            state.token = action.payload.token;
+        },
+        clearCredentials: (state) => {
+            state.user = null;
+            state.token = null;
+        },
+  },
 });
 
-export const {
-  setCredentials,
-} = slice.actions;
+export const { setCredentials, clearCredentials } = slice.actions;
 
 export default slice.reducer;
+
+export const selectUser = (state: RootState) => state.userAuth.user;
